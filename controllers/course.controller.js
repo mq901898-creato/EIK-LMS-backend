@@ -36,6 +36,27 @@ const createCourse = async (req, res) => {
   }
 };
 
+// Get all available courses for students
+const getAvailableCourses = async (req, res) => {
+  try {
+    const courses = await Course.find({ isPublished: true })
+      .populate("teacher", "name")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      message: "Available courses fetched successfully",
+      courses,
+    });
+  } catch (error) {
+    console.error("GET AVAILABLE COURSES ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
 // get course by id of teacher
 const getAllCourses = async (req, res) => {
     try {
@@ -144,6 +165,7 @@ const deleteCourse = async(req , res)=>{
 module.exports = {
   createCourse,//create course
   getAllCourses,//get all courses by teacher id
+  getAvailableCourses,//get all available courses for students
   getSingleCourse,//get single course 
   deleteCourse,//delete course
   updateCourse,//update course

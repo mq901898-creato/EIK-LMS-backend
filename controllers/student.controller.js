@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const User = require("../models/User");
 const bycrpt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Enrollment = require("../models/Enrollment");
@@ -8,8 +8,8 @@ const Submission = require("../models/Submission");
 ///Register Student
 const registerStudent = async (req, res) => {
     try {
-        const { name, email, password } = (req.body);
-        if (!name || !email || !password) {
+        const { name, email, password, phone,Gender, role } = (req.body);
+        if (!name || !email || !password || !phone || !Gender || !role) {
             return res.status(400).json({
                 success: false,
                 message: "required feild is empty"
@@ -23,17 +23,20 @@ const registerStudent = async (req, res) => {
                 message: " User already exists"
             })
         }
-        const Hashpassword = await bycrpt.hash(password, 10);
+        const hashedPassword = await bycrpt.hash(password, 10);
 
         const user = await User.create({
             name,
             email,
-            password: Hashpassword,
+            password: hashedPassword,
+            phone,
+            Gender,
+            role
         });
 
         res.status(201).json({
             success: true,
-            message: "Student Register Sucessfully",
+            message: "Student Register Successfully",
             user,
         })
     }

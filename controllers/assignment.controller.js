@@ -256,46 +256,142 @@ const submissionReviewed = async (req, res) => {
     try {
         const id = req.params.id;
         const { marks, status } = req.body;
-        if(marks === undefined || !status){
+
+        if (marks === undefined || !status) {
             return res.status(400).json({
-                success : false,
-                message : "All feild are required"
-        })
+                success: false,
+                message: "All fields are required"
+            });
         }
-        const submission = await Submission.findByIdAndUpdate(
-            id,
-            {
-                marks,status
-            },
-            {new : true}
-        );
-        if (!submission) {
-            return res.status(404).json({
-            success: false,
-            message: "Submission not found"
-        });
-        }
+
+        // Validate marks range first
         if (marks < 0 || marks > 100) {
             return res.status(400).json({
                 success: false,
                 message: "Marks must be between 0 and 100"
             });
         }
+
+        const submission = await Submission.findByIdAndUpdate(
+            id,
+            { marks, status },
+            { new: true }
+        );
+
+        if (!submission) {
+            return res.status(404).json({
+                success: false,
+                message: "Submission not found"
+            });
+        }
+
         res.status(200).json({
             success: true,
             message: "Submission reviewed successfully",
             submission
         });
-    }
-    catch (error){
+    } catch (error) {
         console.log(error);
         return res.status(500).json({
             success: false,
-            message: "Server Error "
-        })
+            message: "Server Error"
+        });
     }
+};
+// Get all assignments for courses the student is enrolled in
+const getStudentAssignments = async (req, res) => {
+    try {
+        const studentId = req.user.id;
 
-}
+        // 1. Find all courses the student is enrolled in
+        const enrollments = await Enrollment.find({ student: studentId });
+        const courseIds = enrollments.map(enrollment => enrollment.course);
+
+        // 2. Fetch assignments belonging to those courses
+        const assignments = await Assignment.find({ course: { $in: courseIds } })
+            .populate("course", "title")
+            .populate("teacher", "name email");
+
+        // 3. Attach submission status for each assignment
+        const assignmentsWithStatus = await Promise.all(
+            assignments.map(async (assignment) => {
+                const submission = await Submission.findOne({
+                    assignment: assignment._id,
+                    student: studentId
+                });
+
+                return {
+                    ...assignment.toObject(),
+                    isSubmitted: !!submission,
+                    submissionDetails: submission || null
+                };
+            })
+        );
+
+        res.status(200).json({
+            success: true,
+            count: assignmentsWithStatus.length,
+            assignments: assignmentsWithStatus
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+};
+
+// Get a single assignment detail with the student's submission status
+const getStudentAssignmentDetail = async (req, res) => {
+    try {
+        const assignmentId = req.params.id;
+        const studentId = req.user.id;
+
+        const assignment = await Assignment.findById(assignmentId)
+            .populate("course", "title")
+            .populate("teacher", "name email");
+
+        if (!assignment) {
+            return res.status(404).json({
+                success: false,
+                message: "Assignment not found"
+            });
+        }
+
+        // Verify enrollment
+        const enrollment = await Enrollment.findOne({
+            student: studentId,
+            course: assignment.course._id
+        });
+
+        if (!enrollment) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not enrolled in this course"
+            });
+        }
+
+        // Check if student already submitted
+        const submission = await Submission.findOne({
+            assignment: assignmentId,
+            student: studentId
+        });
+
+        res.status(200).json({
+            success: true,
+            assignment,
+            submission: submission || null
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+};
+
 module.exports = {
     createAssignment,
     getMyAssignments,
@@ -305,5 +401,7 @@ module.exports = {
     submitAssignment,
     allSubmission,
     detail,
-    submissionReviewed
+    submissionReviewed,
+    getStudentAssignments, 
+    getStudentAssignmentDetail
 }

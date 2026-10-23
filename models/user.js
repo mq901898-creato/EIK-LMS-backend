@@ -25,10 +25,32 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "teacher", "admin"],
       default: "student",
     },
+
+    // Common fields
+    phone: {
+      type: String,
+      default: "",
+    },
+
+  Gender: {
+    type: String,
+    enum: ["Male", "Female", "Other"],
+    default: undefined,
+  },
+
+    // Teacher only
+    subject: {
+      type: String,
+      default: "",
+    },
+
+    qualification: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
   }
 );
-
 module.exports = mongoose.models.User || mongoose.model("User", userSchema);

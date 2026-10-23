@@ -11,8 +11,13 @@ const enrollmentSchema = new mongoose.Schema({
         ref: "Course",
         required: true,
     },
+    status: {
+        type: String,
+        enum: ["Pending", "Approved", "Rejected"],
+        default: "Pending",
+    }
 }, {
     timestamps: true,
 });
 
-module.exports = mongoose.models.Enrolled || mongoose.model("Enrolled", enrollmentSchema);
+module.exports = mongoose.models.Enrollment || mongoose.model("Enrollment", enrollmentSchema);
