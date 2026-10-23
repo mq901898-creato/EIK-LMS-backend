@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const Course = require("../models/Course");
+const Course = require("../models/course");
 const Enrollment = require("../models/Enrollment");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
