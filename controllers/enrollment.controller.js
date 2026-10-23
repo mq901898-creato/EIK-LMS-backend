@@ -1,6 +1,6 @@
 
 const Enrollment = require("../models/Enrollment");
-const Course = require("../models/Course");
+const Course = require("../models/course");
 
 // ==========================================
 // Student → Request Enrollment
