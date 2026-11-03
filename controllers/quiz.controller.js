@@ -3,7 +3,7 @@ const { GoogleGenAI } = require("@google/genai");
 const mongoose = require("mongoose");
 
 const Quiz = require("../models/Quiz");
-const Course = require("../models/Course");
+const Course = require("../models/course");
 const Enrollment = require("../models/Enrollment");
 
 const generateQuiz = async (req, res) => {
