@@ -14,6 +14,7 @@ const courseRoutes = require("./routes/course.routes");
 const enrollmentRoutes = require("./routes/enrollment.routes");
 const teacherRoutes = require("./routes/teacher.routes");
 const assignmentRoutes = require("./routes/assignment.routes");
+const quizRoutes = require("./routes/quiz.routes");
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/teacher", courseRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/", assignmentRoutes);
+app.use("/api", quizRoutes);
 
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
